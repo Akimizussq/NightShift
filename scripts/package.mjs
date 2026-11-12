@@ -1,0 +1,23 @@
+import './build.mjs';
+import { mkdir,cp,readFile,writeFile,rename,access } from 'node:fs/promises';
+import path from 'node:path';
+import { findCodex } from '../build/main/codex.js';
+const root=path.resolve(import.meta.dirname,'..');
+const release=path.join(root,'release','Nightshift-Windows-x64');
+// Copy only the published application and Electron runtime, never private data or auth.
+const runtime=path.join(root,'.runtime/electron');
+await access(path.join(runtime,'electron.exe'));
+await mkdir(release,{recursive:true});
+await cp(runtime,release,{recursive:true});
+await rename(path.join(release,'electron.exe'),path.join(release,'Nightshift.exe'));
+const appDir=path.join(release,'resources/app');await mkdir(appDir,{recursive:true});
+await cp(path.join(root,'build'),path.join(appDir,'build'),{recursive:true});
+const manifest=JSON.parse(await readFile(path.join(root,'package.json'),'utf8'));
+delete manifest.devDependencies;delete manifest.scripts;
+await writeFile(path.join(appDir,'package.json'),JSON.stringify(manifest,null,2));
+const detectedCodex = findCodex();
+if (detectedCodex) await writeFile(path.join(appDir,'codex-location.json'),JSON.stringify({executable:detectedCodex},null,2));
+await cp(path.join(root,'README.md'),path.join(release,'README.md'));
+await writeFile(path.join(release,'Start-Demo.cmd'),'@echo off\r\nstart "" "%~dp0Nightshift.exe" --demo\r\n');
+await writeFile(path.join(release,'Start.cmd'),'@echo off\r\nstart "" "%~dp0Nightshift.exe"\r\n');
+console.log(`Portable application ready: ${release}`);

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>长程任务助手 · Nightshift</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><img src="../assets/icon.png" alt=""><div>长程任务助手<span>NIGHTSHIFT</span></div></div>
+    <div class="workspace-label">你的本地工作台</div>
+    <nav aria-label="主导航">
+      <button data-nav="overview" class="nav active"><span class="nav-icon">◫</span>运行概览</button>
+      <button data-nav="task" class="nav"><span class="nav-icon">▤</span>当前任务<span id="task-dot" class="nav-dot" hidden></span></button>
+      <button data-nav="conversation" class="nav"><span class="nav-icon">☷</span>任务对话</button>
+      <button data-nav="checkpoints" class="nav"><span class="nav-icon">◷</span>阶段记录<span class="nav-count" id="checkpoint-count">0</span></button>
+      <button data-nav="settings" class="nav"><span class="nav-icon">⚙</span>运行策略</button>
+    </nav>
+    <div class="sidebar-note"><span class="tiny-moon">☾</span><p>夜里安心推进<br>白天从容接手</p><span>每一步，都有记录。</span></div>
+    <div class="connection-card"><span id="connection-dot" class="status-dot"></span><div id="connection-label">尚未连接 Codex</div><button id="connect-btn" title="连接 Codex">连接</button></div>
+    <div class="sidebar-footer"><span>LOCAL FIRST</span><span>v0.2.0</span></div>
+  </aside>
+  <main>
+    <header class="topbar"><div><span class="breadcrumb">工作台</span><span class="slash">/</span><span id="page-label">运行概览</span></div><div class="topbar-right"><span class="local-label"><i></i> 本地运行</span><span id="clock"></span></div></header>
+    <div class="content">
+      <div id="demo-banner" class="demo-banner" hidden><span><strong>演示模式</strong> · 额度和进度均为模拟，不调用模型、不修改项目。</span><button id="demo-new-live">创建真实任务 ↗</button></div>
+      <section id="overview-view" class="view">
+        <div class="page-heading"><div><div class="eyebrow">GOOD WORK, GOOD MORNING</div><h1 id="app-title">把夜晚交给任务。</h1><p>让进度继续，也给明天的自己留一些额度。</p></div><button class="button dark" id="new-task-btn"><span>＋</span> 新建任务</button></div>
+        <div class="hero">
+          <div class="hero-copy"><div class="hero-kicker"><span class="pulse-dot"></span><span id="hero-kicker">准备好，再开始今晚的任务</span></div><h2>夜晚推进任务，<br>白天从容接手。</h2><p id="hero-description">设置一个明确目标。阶段保存、额度保护和等待刷新，交给助手。</p><div class="hero-actions"><button class="button cream" id="start-btn">开启夜间任务 <span>↗</span></button><button class="hero-link" id="strategy-btn">查看保护策略 →</button></div></div>
+          <div class="night-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="moon"></div><span class="star star-one">✦</span><span class="star star-two">✧</span><span class="star star-three">✦</span><div class="morning-tag"><span>☀</span><div>留给上午的你<strong id="hero-reserve">约 50% 可用额度</strong></div></div></div>
+        </div>
+        <div class="section-title"><h3>额度与交接</h3><div><span id="quota-source">等待真实额度</span><button class="icon-button" id="refresh-btn" title="刷新额度" aria-label="刷新额度">↻</button></div></div>
+        <div class="metrics">
+          <article class="metric-card"><div class="metric-top"><span>5 小时剩余额度</span><span class="metric-icon">◔</span></div><div class="metric-value"><span id="short-value">—</span><span class="unit" id="short-unit">%</span><span id="short-badge" class="badge">待连接</span></div><div class="quota-track"><div id="short-fill" class="quota-fill"></div><span id="reserve-mark" class="reserve-mark"></span></div><div class="metric-foot"><span id="short-foot">读取后显示实际剩余</span><span id="short-reserve">上午保留 50%</span></div></article>
+          <article class="metric-card"><div class="metric-top"><span>本周剩余额度</span><span class="metric-icon">▥</span></div><div class="metric-value"><span id="weekly-value">—</span><span class="unit">%</span><span class="badge soft">周额度保护</span></div><div class="quota-track"><div id="weekly-fill" class="quota-fill amber"></div><span id="weekly-mark" class="reserve-mark"></span></div><div class="metric-foot"><span id="weekly-foot">接近保护线时提前收尾</span><span id="weekly-reserve">保留 30%</span></div></article>
+          <article class="metric-card time-card"><div class="metric-top"><span>本轮实际刷新时间</span><span class="metric-icon">◷</span></div><div class="metric-value"><span id="reset-value">—:—</span><span id="reset-countdown" class="time-note">等待读取</span></div><div class="handoff-line"><span class="sun-icon">☀</span><span><strong id="wake-label">10:00 起床交接</strong><small id="alignment-label">目标：起床后约 1 小时刷新</small></span></div></article>
+        </div>
+        <div class="lower-grid">
+          <article class="panel task-panel"><div class="panel-heading"><h3>今晚的任务</h3><span id="task-status" class="badge">尚未创建</span></div><div class="task-body"><div class="task-symbol">⌘</div><div class="task-info"><h4 id="task-title">给今晚安排一个明确目标</h4><p id="task-path">选择本地项目，写下验收条件</p></div></div><p id="task-reason" class="task-reason">任务将分阶段执行，每次继续前重新检查额度。</p><div class="task-stats"><div><span>已保存阶段</span><strong id="stage-count">0</strong></div><div><span>会话状态</span><strong id="thread-label">尚未开始</strong></div><div><span>执行模式</span><strong id="mode-label">真实运行</strong></div></div><div class="panel-actions"><button class="button subtle" id="pause-btn" disabled>Ⅱ 暂停并接管</button><button class="text-button" id="detail-btn">查看任务详情 →</button></div></article>
+          <article class="panel protection-panel"><div class="panel-heading"><h3>白天使用优先</h3><span class="shield">◇</span></div><div class="protection-row"><span class="check-circle">✓</span><div><strong id="protection-morning">上午保留约 50%</strong><p id="buffer-description">提前进入收尾，给用量波动留出缓冲</p></div></div><div class="protection-row"><span class="check-circle">✓</span><div><strong id="protection-weekly">周额度保留 30%</strong><p>接近保护线后停止，等待你重新开启</p></div></div><div class="protection-row"><span class="check-circle">✓</span><div><strong>每个阶段都有恢复记录</strong><p>额度耗尽后，也能查看已有总结和下一步</p></div></div><button class="text-button" id="edit-settings-btn">调整运行策略 →</button></article>
+        </div>
+      </section>
+
+      <section id="task-view" class="view" hidden>
+        <div class="page-heading"><div><div class="eyebrow">ONE CLEAR GOAL</div><h1>当前任务</h1><p>目标、验证和下一步，始终放在一起。</p></div><button class="button dark" id="task-new-btn">＋ 新建任务</button></div>
+        <article class="panel task-detail"><div class="panel-heading"><h3 id="detail-title">尚未创建任务</h3><span id="detail-status" class="badge">等待开始</span></div><div class="detail-grid"><div><label>项目目录</label><p id="detail-path">—</p></div><div><label>Codex 会话</label><p id="detail-thread">—</p></div></div><label>任务目标</label><p id="detail-goal" class="pre-wrap">创建任务后显示</p><label>验收条件</label><p id="detail-acceptance" class="pre-wrap">请使用可以验证的具体条件。</p><div class="notice" id="detail-reason">每个阶段结束后，助手都会保存进度并重新检查额度。</div><div class="button-row"><button class="button dark" id="task-start-btn">开始 / 继续任务</button><button class="button subtle" id="task-pause-btn">暂停并接管</button><button class="button outline danger" id="stop-btn">停止并保存总结</button><button class="text-button" id="open-project-btn">打开项目 ↗</button><button class="text-button" id="task-conversation-btn">查看任务对话 →</button></div></article>
+        <article class="panel output-panel"><div class="panel-heading"><h3>最近的阶段输出</h3><span class="caption">本地保存 · 不包含原始推理</span></div><pre id="live-output" class="output">等待任务执行。你可以先创建演示任务，体验完整流程。</pre></article>
+        <article class="panel output-panel"><div class="panel-heading"><h3>运行记录</h3><span class="caption">最近 100 条</span></div><div id="logs" class="logs"><div class="empty-small">暂无运行记录</div></div></article>
+      </section>
+
+      <section id="conversation-view" class="view" hidden>
+        <div class="page-heading"><div><div class="eyebrow">THE WHOLE CONVERSATION</div><h1>任务对话</h1><p>查看同一 Codex 会话的消息、命令和结果，并在这里回复。</p></div><button class="button subtle" id="reload-conversation-btn">刷新对话</button></div>
+        <div id="conversation-status" class="notice">创建真实任务并开始阶段后，可以查看完整会话。</div>
+        <article id="approval-card" class="panel output-panel" hidden><h3>等待你的选择</h3><p id="approval-description" class="pre-wrap"></p><div id="approval-options"></div><div class="button-row" id="approval-actions"><button class="button dark" id="approval-accept-btn">允许本次</button><button class="button subtle" id="approval-decline-btn">拒绝</button></div></article>
+        <div id="conversation-list" class="conversation-list"></div>
+        <form id="reply-form" class="panel output-panel"><label for="reply-text"><strong>回复这个会话</strong></label><textarea id="reply-text" rows="4" placeholder="补充要求、回答问题，或说明阻塞已解决。"></textarea><div class="button-row"><button class="button dark" id="reply-btn" type="submit">发送回复</button><button class="button subtle" id="acknowledge-btn" type="button">已处理阻塞</button><span class="caption" id="reply-hint">暂停后可回复；回复完成后手动继续夜间调度。</span></div></form>
+      </section>
+
+      <section id="checkpoints-view" class="view" hidden>
+        <div class="page-heading"><div><div class="eyebrow">EVERY STEP, SAVED</div><h1>阶段记录</h1><p>从真实的进展和验证结果继续。</p></div><button class="button dark" id="export-btn">↓ 导出任务报告</button></div>
+        <div id="checkpoints" class="checkpoint-list"><div class="empty-state"><span>◷</span><h3>每一步，都会留在这里</h3><p>完成阶段或暂停任务后，进度、验证结果和下一步会自动保存。</p></div></div>
+      </section>
+
+      <section id="settings-view" class="view" hidden>
+        <div class="page-heading"><div><div class="eyebrow">YOUR MORNING COMES FIRST</div><h1>运行策略</h1><p>先照顾白天的使用，再安排夜里的进度。</p></div><button class="button dark" id="save-settings-btn">保存策略 ✓</button></div>
+        <form id="settings-form"><div class="notice policy-note">保留比例是后台调度目标。同一账户的其他会话也会消耗额度，单次请求和用量更新可能跨过保护线；助手会提前留出缓冲。</div>
+          <article class="panel settings-section"><div class="settings-section-title"><span>01</span><div><h3>作息与额度窗口</h3><p>使用电脑的本地时区，按实际额度窗口安排任务。</p></div></div><div class="form-grid"><div class="field"><label for="nightStart">夜间开始时间</label><input id="nightStart" name="nightStart" type="time" required></div><div class="field"><label for="wakeTime">起床 / 交接时间</label><input id="wakeTime" name="wakeTime" type="time" required></div><div class="field"><label for="refreshAfterWakeMinutes">希望在起床多久后刷新</label><select id="refreshAfterWakeMinutes" name="refreshAfterWakeMinutes"><option value="0">起床时</option><option value="30">30 分钟后</option><option value="60">1 小时后（推荐）</option><option value="90">1.5 小时后</option><option value="120">2 小时后</option></select></div></div><div class="notice"><span id="schedule-preview">目标开启时间 06:00 → 起床 10:00 → 目标刷新 11:00</span><small>已有窗口无法强行重启；界面始终展示服务器返回的实际刷新时间。</small></div></article>
+          <article class="panel settings-section"><div class="settings-section-title"><span>02</span><div><h3>白天额度保护</h3><p>接近保留线时提前停止后台消耗。</p></div></div><div class="range-row"><div><label for="morningReserve">上午保留的 5h 额度</label><p>保护起床后到下一次刷新之间的使用</p></div><div class="range-control"><input type="range" id="morningReserve" name="morningReserve" min="10" max="85" step="5"><output id="morningReserve-output">50%</output></div></div><div class="range-row"><div><label for="weeklyReserve">保留的周额度</label><p>达到收尾线后停止任务，不自动跨周重启</p></div><div class="range-control"><input type="range" id="weeklyReserve" name="weeklyReserve" min="10" max="85" step="5"><output id="weeklyReserve-output">30%</output></div></div><div class="form-grid two"><div class="field"><label for="buffer">提前收尾缓冲（百分点）</label><input id="buffer" name="buffer" type="number" min="3" max="15"><small>例如保留 50% ＋ 缓冲 7%，在剩余 57% 时触发暂停。</small></div><div class="field"><label for="shortWindowReserve">普通夜间窗口保留（%）</label><input id="shortWindowReserve" name="shortWindowReserve" type="number" min="3" max="30"><small>早晨窗口之外，也保留收尾余量。</small></div></div></article>
+          <article class="panel settings-section"><div class="settings-section-title"><span>03</span><div><h3>执行与连接</h3><p>任务在你的电脑上运行，使用 ChatGPT 账户登录 Codex。</p></div></div><div class="field"><label for="codexPath">Codex 可执行程序</label><div class="input-with-button"><input id="codexPath" name="codexPath" placeholder="自动寻找已安装的 Codex；也可以手动选择"><button type="button" class="button subtle" id="choose-codex-btn">选择文件</button></div><small id="detected-codex">连接后显示检测结果</small></div><div class="form-grid"><div class="field"><label for="model">模型</label><select id="model" name="model"><option value="">使用 Codex 默认模型</option></select></div><div class="field"><label for="stageMinutes">每阶段目标时长（分钟）</label><input id="stageMinutes" name="stageMinutes" type="number" min="1" max="20"><small>超时先请求收尾，仍未结束则暂停。</small></div><div class="field"><label for="pollSeconds">额度刷新间隔（秒）</label><input id="pollSeconds" name="pollSeconds" type="number" min="15" max="300"></div></div><label class="toggle-row"><div><strong>运行期间防止自动睡眠</strong><p>允许屏幕关闭；主动休眠、合盖或关机仍会中断运行。</p></div><input id="preventSleep" name="preventSleep" type="checkbox" role="switch"></label><label class="toggle-row"><div><strong>开机启动应用</strong><p>启动后保留暂停状态，由你决定何时继续。</p></div><input id="autoStart" name="autoStart" type="checkbox" role="switch"></label><label class="toggle-row"><div><strong>允许任务访问网络</strong><p>使用 Codex 的工作区沙箱；权限申请和交互请求会暂停任务。</p></div><input id="networkAccess" name="networkAccess" type="checkbox" role="switch"></label><div class="button-row"><button type="button" class="button dark" id="settings-connect-btn">连接 Codex</button><button type="button" class="button subtle" id="login-btn">使用 ChatGPT 登录 ↗</button><span class="caption" id="account-label">尚未登录</span></div></article>
+          <article class="panel settings-section"><div class="settings-section-title"><span>04</span><div><h3>阅读字体</h3><p>对话、阶段记录和输入框统一调整。</p></div></div><div class="field"><label for="fontSize">字体大小</label><select id="fontSize" name="fontSize"><option value="14">14px</option><option value="16">16px（推荐）</option><option value="18">18px</option><option value="20">20px</option></select></div></article>
+        </form>
+      </section>
+      <footer class="content-footer"><span>☾ 长程任务助手</span><span>进度有记录 · 白天有余量</span></footer>
+    </div>
+  </main>
+
+  <dialog id="task-dialog"><form id="task-form"><div class="dialog-heading"><div><div class="eyebrow">A PLAN FOR TONIGHT</div><h2>给今晚一个明确目标</h2></div><button type="button" class="icon-button" id="close-dialog" aria-label="关闭">×</button></div><div class="mode-selector"><label><input type="radio" name="mode" value="live" checked><span>真实任务<small>在本地项目中执行</small></span></label><label><input type="radio" name="mode" value="demo"><span>演示体验<small>不调用模型或修改文件</small></span></label></div><div class="field"><label for="task-name">任务名称</label><input id="task-name" name="title" placeholder="例如：完成个人网站的文章搜索功能" required maxlength="200"></div><div class="field"><label for="project-path">项目目录</label><div class="input-with-button"><input id="project-path" name="projectPath" placeholder="选择本地项目，建议使用独立 Git 分支"><button type="button" class="button subtle" id="choose-project-btn">选择目录</button></div></div><div class="field"><label for="task-goal">任务目标</label><textarea id="task-goal" name="goal" rows="3" placeholder="说明要完成什么、修改范围和已有约束。" required></textarea></div><div class="field"><label for="task-acceptance">验收条件</label><textarea id="task-acceptance" name="acceptance" rows="3" placeholder="例如：支持标题搜索；现有测试通过；提供变更和验证结果。" required></textarea></div><p class="dialog-note">任务会修改所选项目中的文件。每阶段保存进度，遇到权限申请或需要你决策时暂停。</p><div class="dialog-actions"><button type="button" class="button subtle" id="cancel-dialog">取消</button><button type="submit" class="button dark">保存任务 →</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

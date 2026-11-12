@@ -1,0 +1,10 @@
+import { readFile,writeFile,mkdir,cp } from 'node:fs/promises';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');const dest=path.join(root,'artifacts/ui-preview');await mkdir(dest,{recursive:true});
+await cp(path.join(root,'build/renderer'),dest,{recursive:true});await cp(path.join(root,'assets/icon.png'),path.join(dest,'icon.png'));
+const now=Date.now();
+const snapshot={settings:{wakeTime:'10:00',refreshAfterWakeMinutes:60,nightStart:'23:00',morningReserve:50,weeklyReserve:30,buffer:7,shortWindowReserve:8,stageMinutes:8,pollSeconds:60,preventSleep:true,autoStart:false,codexPath:'',model:'',networkAccess:false},task:{id:'preview',title:'体验一次夜间任务',projectPath:'',goal:'演示阶段执行、进度保存和上午额度保护的完整流程。',acceptance:'触及保护线时自动暂停，不调用模型、不修改真实项目。',mode:'demo',status:'draft',reason:'任务已保存，等待开始',stages:0},quota:{source:'demo',fetchedAt:now,short:{usedPercent:15,resetsAt:now+90*60000},weekly:{usedPercent:36,resetsAt:now+4*86400000}},connection:{connected:false,models:[]},checkpoints:[],logs:[],liveOutput:'',schedule:{desiredReset:new Date().setHours(11,0,0,0)}};
+const bridge=`const s=${JSON.stringify(snapshot)};const callbacks=[];const refresh=()=>callbacks.forEach(f=>f(s));window.nightshift={snapshot:async()=>s,onChange:f=>callbacks.push(f),saveSettings:async settings=>{s.settings=settings;refresh();return s;},createTask:async task=>{s.task={...s.task,...task};refresh();return s;},arm:async()=>{throw new Error('这是静态界面预览，请在桌面应用中执行任务');},pause:async()=>s,stop:async()=>s,connect:async()=>{throw new Error('请在桌面应用中连接 Codex');},login:async()=>{},refresh:async()=>s,selectProject:async()=>null,selectCodex:async()=>null,exportReport:async()=>null,openProject:async()=>{}};`;
+let html=await readFile(path.join(dest,'index.html'),'utf8');html=html.replace('../assets/icon.png','./icon.png').replace('<script type="module" src="./app.js"></script>','<script src="./bridge.js"></script><script src="./app.js"></script>');
+await writeFile(path.join(dest,'index.html'),html);await writeFile(path.join(dest,'bridge.js'),bridge);
+console.log('Static QA preview generated.');

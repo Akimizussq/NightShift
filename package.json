@@ -1,0 +1,19 @@
+{
+  "name": "nightshift-codex",
+  "productName": "长程任务助手",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A local Codex night scheduler with daytime quota protection",
+  "type": "module",
+  "main": "build/main/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/launch.mjs",
+    "demo": "node scripts/launch.mjs --demo",
+    "test": "node scripts/build.mjs && node --test tests/*.test.mjs",
+    "smoke": "node scripts/launch.mjs --smoke",
+    "package": "node scripts/package.mjs"
+  },
+  "engines": { "node": ">=22.18.0" },
+  "devDependencies": { "electron": "42.3.0" }
+}
